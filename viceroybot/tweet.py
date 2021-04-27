@@ -20,7 +20,7 @@ def tweet_random(queue_file):
     api = authenticate()
 
     with open(queue_file) as f:
-        tweet_queue = json.load(tweet_queue, f)
+        tweet_queue = json.load(f)
     for tweet in tweet_queue:
         if not tweet["sent"]:
             try:
