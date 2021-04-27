@@ -1,4 +1,3 @@
-import sys
 import tweepy
 import json
 from viceroybot.auth_secrets import (
@@ -7,6 +6,7 @@ from viceroybot.auth_secrets import (
     ACCESS_TOKEN,
     ACCESS_TOKEN_SECRET,
 )
+
 
 def authenticate():
     # Authenticate to Twitter, returns API
@@ -26,7 +26,7 @@ def tweet_random(queue_file):
             try:
                 api.update_status(tweet["text"])
                 tweet["sent"] = True
-            except:
+            except tweepy.TweepError:
                 print("Failed to tweet")
             finally:
                 break
@@ -46,7 +46,8 @@ def get_trending(location="USA"):
         if (
             (t["promoted_content"] is None)
             and (len(t["name"].split()) >= 3)  # nothing promoted
-            # remove most people, so I Nietzche doesn't shit-talk a dead hero of mine accidentally
+            # remove most people,
+            # so I Nietzche doesn't shit-talk a dead hero of mine accidentally
         )
     ]
     return trends

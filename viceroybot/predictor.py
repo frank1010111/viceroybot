@@ -6,12 +6,12 @@ from viceroybot.tweet import get_trending
 
 def build_queue(queue_file: str, markov_chain: dict, prompts: list) -> list:
     """Appends new tweets to the queue
-    
+
     Parameters:
         queue_file (json) - existing queue file to append to
         markov_chain - Markov chain to work off of
         prompts - the strings to feed into the Markov chain to start things off
-        
+
     Returns:
         queue (a list)
     """
@@ -96,22 +96,20 @@ def count_elements(seq) -> dict:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Add to queue from trending tweets"
-    )
+    parser = argparse.ArgumentParser(description="Add to queue from trending tweets")
     parser.add_argument(
         "spec_file", metavar="SPEC_FILE", nargs="+", help="specification file (pickle)"
     )
     parser.add_argument(
         "--train", "-t", action="store_true", help="train Markov chain from text"
     )
+    parser.add_argument("--queue", "-q", help="queue file", default="tweet_queue.json")
     parser.add_argument(
-        "--queue", "-q", help="queue file", default="tweet_queue.json"
+        "--location", "-l", help="twitter location for trends", default="USA"
     )
     parser.add_argument(
-        "--location", "-l", help="twitter location for trends", default='USA'
+        "--max_trends", type=int, default=8, help="upper limit on trends to use"
     )
-    parser.add_argument('--max_trends', type=int, default=8, help="upper limit on trends to use")
     args = parser.parse_args()
     if args.train:
         markov_chain = train_markov_chain(args.spec_file)
@@ -122,5 +120,5 @@ if __name__ == "__main__":
     if len(trends) > args.max_trends:
         trends = choices(trends, k=args.max_trends)
     new_queue = build_queue(args.queue, markov_chain, trends)
-    with open(args.queue, 'w') as f:
+    with open(args.queue, "w") as f:
         json.dump(new_queue, f)
