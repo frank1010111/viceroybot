@@ -26,8 +26,10 @@ def tweet_random(queue_file):
             try:
                 api.update_status(tweet["text"])
                 tweet["sent"] = True
-            except tweepy.TweepError:
+            except tweepy.TweepError as e:
                 print("Failed to tweet")
+                print(e)
+                raise
             finally:
                 break
     with open(queue_file, "w") as f:
