@@ -34,7 +34,7 @@ def build_queue(queue_file: str, markov_chain: dict, prompts: list) -> list:
 def twitterify(text, limit=280):
     "Make text fit into twitter character limit"
     if len(text) > limit:
-        j = limit
+        j = limit - 1
         while text[j] not in (".", "?", "!", ";"):
             j -= 1
         text = text[: j + 1]
