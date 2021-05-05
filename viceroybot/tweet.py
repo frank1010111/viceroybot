@@ -33,7 +33,7 @@ def tweet_random(queue_file):
             finally:
                 break
     with open(queue_file, "w") as f:
-        json.dump(tweet_queue, f)
+        json.dump(tweet_queue, f, indent=2)
 
 
 def get_trending(location="USA"):
