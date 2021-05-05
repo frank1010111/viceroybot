@@ -110,6 +110,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max_trends", type=int, default=8, help="upper limit on trends to use"
     )
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="increase output verbosity"
+    )
     args = parser.parse_args()
     if args.train:
         markov_chain = train_markov_chain(args.spec_file)
@@ -120,5 +123,11 @@ if __name__ == "__main__":
     if len(trends) > args.max_trends:
         trends = choices(trends, k=args.max_trends)
     new_queue = build_queue(args.queue, markov_chain, trends)
+    if args.verbose >= 1:
+        print(f"{len(trends)} trends captured")
+    if args.verbose >= 2:
+        print("trends include:")
+        for t in trends:
+            print("  ", t)
     with open(args.queue, "w") as f:
-        json.dump(new_queue, f)
+        json.dump(new_queue, f, indent=2)
