@@ -1,5 +1,6 @@
 import tweepy
 import json
+from datetime import datetime
 from viceroybot.auth_secrets import (
     BEARER_TOKEN,
     BEARER_TOKEN_SECRET,
@@ -25,7 +26,7 @@ def tweet_random(queue_file):
         if not tweet["sent"]:
             try:
                 api.update_status(tweet["text"])
-                tweet["sent"] = True
+                tweet["sent"] = datetime.now().strftime("%Y-%m-%d %T")
             except tweepy.TweepError as e:
                 print("Failed to tweet")
                 print(e)
@@ -34,6 +35,7 @@ def tweet_random(queue_file):
                 break
     with open(queue_file, "w") as f:
         json.dump(tweet_queue, f, indent=2)
+    return tweet["text"]
 
 
 def get_trending(location="USA"):
