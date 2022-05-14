@@ -1,12 +1,12 @@
 import tweepy
 import json
 from datetime import datetime
-from viceroybot.auth_secrets import (
-    BEARER_TOKEN,
-    BEARER_TOKEN_SECRET,
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET,
-)
+import os
+
+BEARER_TOKEN = os.environ.get("BEARER_TOKEN")
+BEARER_TOKEN_SECRET = os.environ.get("BEARER_TOKEN_SECRET")
+ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.environ.get("ACCESS_TOKEN_SECRET")
 
 
 def authenticate():
