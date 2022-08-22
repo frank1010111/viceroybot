@@ -1,5 +1,8 @@
-from viceroybot.tweet import tweet_random
+from __future__ import annotations
+
 import sys
 
-tweet = tweet_random(sys.argv[1])
+from viceroybot.tweet import tweet_from_queue
+
+tweet = tweet_from_queue(sys.argv[1])
 print(tweet)

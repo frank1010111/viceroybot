@@ -22,7 +22,7 @@ def authenticate():
     return tweepy.API(auth)
 
 
-def tweet_random(queue_file):
+def tweet_from_queue(queue_file):
     """Tweet the first unsent tweet from the queue file and set it to sent."""
     api = authenticate()
 
