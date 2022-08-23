@@ -4,12 +4,6 @@ To use trends and tweets, you need to sign up for Twitter's API to get bearer
 and access tokens, then load them into the system environment or a .env file
 in the directory where you are running this.
 
-Subcommands:
-train: train the text generation on input files
-generate: generate text following your choice of first words
-trends: generate text about twitter trending topics
-tweet: tweet generated text
-
 """
 from __future__ import annotations
 
@@ -20,6 +14,7 @@ from pathlib import Path
 from random import choice
 
 import click
+from dotenv import load_dotenv
 
 from viceroybot.predictor import (
     build_queue,
@@ -28,9 +23,11 @@ from viceroybot.predictor import (
 )
 from viceroybot.tweet import get_trending, tweet_from_queue
 
-os.makedirs(".viceroy", exist_ok=True)
-MODEL_FILE = Path(".viceroy/trained_model.pkl")
-QUEUE_FILE = Path(".viceroy/tweet_queue.json")
+load_dotenv()
+VICEROY_BASE = Path(os.environ.get("VICEROY_BASE", ".viceroy"))
+os.makedirs(VICEROY_BASE, exist_ok=True)
+MODEL_FILE = VICEROY_BASE / "trained_model.pkl"
+QUEUE_FILE = VICEROY_BASE / "tweet_queue.json"
 
 
 @click.group()
@@ -43,7 +40,7 @@ def viceroy():
 @click.argument("inputs", nargs=-1, type=click.Path(exists=True))
 # @click.option("--output", type=click.Path())
 def train(inputs):
-    """Train Markov chain on all files."""
+    """Train Markov chain on input files."""
     markov_chain = train_markov_chain(inputs)
     with open(MODEL_FILE, "wb") as file:
         pickle.dump(markov_chain, file)
@@ -53,7 +50,7 @@ def train(inputs):
 @click.argument("prompt", nargs=-1)
 @click.option("-n", "--n-words", type=int)
 def generate(prompt, n_words):
-    """Generate text given the prompt."""
+    """Generate text given a prompt."""
     if not MODEL_FILE.exists():
         click.ClickException("Must train model with `viceroy train` to generate")
     with open(MODEL_FILE) as f:
@@ -65,7 +62,7 @@ def generate(prompt, n_words):
 @viceroy.command()
 @click.option("-l", "--location", default="USA", show_default=True)
 def trends(location):
-    """Get the trending topics."""
+    """Get the twitter trending topics."""
     trending = get_trending(location)
     click.echo("Trends:")
 
@@ -77,7 +74,7 @@ def trends(location):
 @click.option("-r", "--raw", is_flag=True)
 @click.argument("prompt", type=str, nargs=-1)
 def queue(raw: bool, prompt=list[str]):
-    """Add to tweet queue.
+    """Add to the tweet queue.
 
     If no prompt is given, get Twitter trending topics and use one of them.
     """
