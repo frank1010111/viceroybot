@@ -66,8 +66,6 @@ def get_trending(location: str | int = "USA", min_words: int = 3):
         if (
             (t["promoted_content"] is None)  # nothing promoted
             and (len(t["name"].split()) >= min_words)
-            # remove most people,
-            # so I Nietzche doesn't shit-talk a dead hero of mine accidentally
         )
     ]
     return trends
