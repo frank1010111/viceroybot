@@ -37,6 +37,11 @@ Documentation = "https://github.com/frank1010111/viceroybot#readme"
 Issues = "https://github.com/frank1010111/viceroybot/issues"
 Source = "https://github.com/frank1010111/viceroybot"
 
+[project.optional-dependencies]
+dev = [
+  "pre-commit"
+]
+
 [tool.hatch.build.targets.sdist]
 [tool.hatch.build.targets.wheel]
 
