@@ -43,8 +43,18 @@ def tweet_from_queue(queue_file):
     return tweet["text"]
 
 
-def get_trending(location: str | int = "USA"):
-    """Get trending tweets for a location from twitter."""
+def get_trending(location: str | int = "USA", min_words: int = 3):
+    """Get trending tweets for a location from twitter.
+
+    See <https://github.com/vishnumohanrk/twitter-WOEID> for the WOEID list.
+
+    Args:
+        location (str | int): twitter location (USA or a woeid)
+        min_words (int): minimum number of words
+
+    Returns:
+        list of trending topics
+    """
     if location == "USA":
         woeid = 23424977
     else:
@@ -55,7 +65,7 @@ def get_trending(location: str | int = "USA"):
         for t in api.get_place_trends(woeid)[0]["trends"]
         if (
             (t["promoted_content"] is None)  # nothing promoted
-            and (len(t["name"].split()) >= 3)
+            and (len(t["name"].split()) >= min_words)
             # remove most people,
             # so I Nietzche doesn't shit-talk a dead hero of mine accidentally
         )

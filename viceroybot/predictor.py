@@ -72,6 +72,8 @@ def write_from_markov_chain(
                 prefix = last_prefix_lookup[prefix[-1]]  # note, this is deterministic
             except KeyError:  # for the last word in a paragraph
                 prefix = choice(prefix_list)
+            except IndexError:  # when the last word isn't in the prefixes
+                prefix = choice(prefix_list)
         suffix = choice(list(markov_chain[prefix]))
         out += " " + suffix
         prefix = tuple(list(prefix[1:]) + [suffix])
@@ -94,7 +96,7 @@ def update_markov_chain(line: str, chain: dict[tuple, str], n_pref: int = 2):
     Args:
         line (str) new line of text
         chain (dict) existing Markov chain
-        n_pref (int) number of prefactory terms
+        n_pref (int) number of prefix terms
     Return: return_description
     """
     words = line.split()  # .replace('—',' ')

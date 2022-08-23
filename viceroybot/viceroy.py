@@ -79,10 +79,14 @@ def queue(raw: bool, prompt=list[str]):
     If no prompt is given, get Twitter trending topics and use one of them.
     """
     if prompt:
-        prompts = [" ".join(prompt)]
+        prompt = " ".join(prompt)
     else:
-        prompts = [choice(get_trending("USA"))]
-        click.echo("prompts are\n  " + "\n  ".join(prompts))
+        trends = get_trending("USA")
+        if trends:
+            prompt = choice(trends)
+        else:
+            prompt = None
+        click.echo("the prompt is: \n  " + prompt)
     if raw:
         with open(QUEUE_FILE) as file:
             queue = json.load(file)
@@ -91,7 +95,7 @@ def queue(raw: bool, prompt=list[str]):
     else:
         with open(MODEL_FILE, "rb") as file:
             markov_chain = pickle.load(file)
-        queue = build_queue(QUEUE_FILE, markov_chain, prompts)
+        queue = build_queue(QUEUE_FILE, markov_chain, prompt)
     click.echo("The new tweet will be:\n  " + queue[-1]["text"])
     with open(QUEUE_FILE, "w") as file:
         json.dump(queue, file, indent=2)
