@@ -1,11 +1,15 @@
-from random import choice, choices
-import pickle
+"""Predict text using Markov chains."""
+
+from __future__ import annotations
+
 import json
-from viceroybot.tweet import get_trending
+from random import choice
 
 
-def build_queue(queue_file: str, markov_chain: dict, prompts: list) -> list:
-    """Appends new tweets to the queue
+def build_queue(
+    queue_file: str, markov_chain: dict, prompts: list[str]
+) -> list[dict[str, str | bool]]:
+    """Append new tweets to the queue.
 
     Parameters:
         queue_file (json) - existing queue file to append to
@@ -15,9 +19,12 @@ def build_queue(queue_file: str, markov_chain: dict, prompts: list) -> list:
     Returns:
         queue (a list)
     """
-    with open(queue_file, "r") as f:
+    with open(queue_file) as f:
         queue = json.load(f)
-    idx = max(x["id"] for x in queue)
+    if queue:
+        idx = max(x["id"] for x in queue)
+    else:
+        idx = 0
     for p in prompts:
         idx += 1
         tries = 0
@@ -32,7 +39,7 @@ def build_queue(queue_file: str, markov_chain: dict, prompts: list) -> list:
 
 
 def twitterify(text, limit=280):
-    "Make text fit into twitter character limit"
+    """Make text fit into twitter character limit."""
     if len(text) > limit:
         j = limit - 1
         while text[j] not in (".", "?", "!", ";"):
@@ -43,7 +50,18 @@ def twitterify(text, limit=280):
     return text
 
 
-def write_from_markov_chain(markov_chain, n_words=100, prompt=None):
+def write_from_markov_chain(
+    markov_chain: dict[tuple[str], str], n_words: int = 100, prompt: str | None = None
+):
+    """Generate text given a markov chain.
+
+    Args:
+        markov_chain (dict): predicting tool
+        n_words (int): number of words to generate
+        prompt (str): text to start with
+    Returns:
+        generated text
+    """
     prefix_list = list(markov_chain)
     last_prefix_lookup = {p[-1]: p for p in markov_chain}
     if prompt is None:
@@ -51,11 +69,13 @@ def write_from_markov_chain(markov_chain, n_words=100, prompt=None):
     else:
         prefix = tuple(prompt.split())
     out = " ".join(prefix)
-    for i in range(n_words):
+    for _i in range(n_words):
         if prefix not in markov_chain:
             try:
                 prefix = last_prefix_lookup[prefix[-1]]  # note, this is deterministic
             except KeyError:  # for the last word in a paragraph
+                prefix = choice(prefix_list)
+            except IndexError:  # when the last word isn't in the prefixes
                 prefix = choice(prefix_list)
         suffix = choice(list(markov_chain[prefix]))
         out += " " + suffix
@@ -63,16 +83,25 @@ def write_from_markov_chain(markov_chain, n_words=100, prompt=None):
     return out
 
 
-def train_markov_chain(files):
+def train_markov_chain(files: list[str]):
+    """Train Markov chain from input files."""
     markov_chain = {}
     for fname in files:
-        with open(fname, "r") as f:
+        with open(fname) as f:
             for line in f.readlines():
                 markov_chain = update_markov_chain(line, markov_chain, n_pref=3)
     return markov_chain
 
 
-def update_markov_chain(line, chain={}, n_pref=2):
+def update_markov_chain(line: str, chain: dict[tuple, str], n_pref: int = 2):
+    """Update existing Markov chain with new line.
+
+    Args:
+        line (str) new line of text
+        chain (dict) existing Markov chain
+        n_pref (int) number of prefix terms
+    Return: return_description
+    """
     words = line.split()  # .replace('—',' ')
     if len(words) < n_pref + 1:
         return chain
@@ -87,47 +116,7 @@ def update_markov_chain(line, chain={}, n_pref=2):
 
 def count_elements(seq) -> dict:
     """Tally elements from `seq`."""
-    hist = {}
+    histogram = {}
     for i in seq:
-        hist[i] = hist.get(i, 0) + 1
-    return hist
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Add to queue from trending tweets")
-    parser.add_argument(
-        "spec_file", metavar="SPEC_FILE", nargs="+", help="specification file (pickle)"
-    )
-    parser.add_argument(
-        "--train", "-t", action="store_true", help="train Markov chain from text"
-    )
-    parser.add_argument("--queue", "-q", help="queue file", default="tweet_queue.json")
-    parser.add_argument(
-        "--location", "-l", help="twitter location for trends", default="USA"
-    )
-    parser.add_argument(
-        "--max_trends", type=int, default=8, help="upper limit on trends to use"
-    )
-    parser.add_argument(
-        "-v", "--verbose", action="count", help="increase output verbosity"
-    )
-    args = parser.parse_args()
-    if args.train:
-        markov_chain = train_markov_chain(args.spec_file)
-    else:
-        with open(args.spec_file[0], "rb") as f:
-            markov_chain = pickle.load(f)
-    trends = get_trending(args.location)
-    if len(trends) > args.max_trends:
-        trends = choices(trends, k=args.max_trends)
-    new_queue = build_queue(args.queue, markov_chain, trends)
-    if args.verbose >= 1:
-        print(f"{len(trends)} trends captured")
-    if args.verbose >= 2:
-        print("trends include:")
-        for t in trends:
-            print("  ", t)
-    with open(args.queue, "w") as f:
-        json.dump(new_queue, f, indent=2)
+        histogram[i] = histogram.get(i, 0) + 1
+    return histogram
