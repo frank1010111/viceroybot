@@ -21,7 +21,10 @@ def build_queue(
     """
     with open(queue_file) as f:
         queue = json.load(f)
-    idx = max(x["id"] for x in queue)
+    if queue:
+        idx = max(x["id"] for x in queue)
+    else:
+        idx = 0
     for p in prompts:
         idx += 1
         tries = 0

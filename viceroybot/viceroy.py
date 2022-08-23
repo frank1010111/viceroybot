@@ -48,14 +48,14 @@ def train(inputs):
 
 @viceroy.command()
 @click.argument("prompt", nargs=-1)
-@click.option("-n", "--n-words", type=int)
+@click.option("-n", "--n-words", type=int, default=60, show_default=True)
 def generate(prompt, n_words):
     """Generate text given a prompt."""
     if not MODEL_FILE.exists():
         click.ClickException("Must train model with `viceroy train` to generate")
-    with open(MODEL_FILE) as f:
-        markov_chain = pickle.load(f)
-    output = write_from_markov_chain(markov_chain, n_words, prompt)
+    with open(MODEL_FILE, "rb") as file:
+        markov_chain = pickle.load(file)
+    output = write_from_markov_chain(markov_chain, n_words, " ".join(prompt))
     click.echo(output)
 
 
@@ -78,6 +78,9 @@ def queue(raw: bool, prompt=list[str]):
 
     If no prompt is given, get Twitter trending topics and use one of them.
     """
+    if not QUEUE_FILE.exists():
+        with open(QUEUE_FILE, "w") as file:
+            json.dump([], file)
     if prompt:
         prompt = " ".join(prompt)
     else:
@@ -90,12 +93,15 @@ def queue(raw: bool, prompt=list[str]):
     if raw:
         with open(QUEUE_FILE) as file:
             queue = json.load(file)
-        id = max(tweet["id"] for tweet in queue) + 1
+        if queue:
+            id = max(tweet["id"] for tweet in queue) + 1
+        else:
+            id = 1
         queue.append({"id": id, "text": prompt, "sent": False})
     else:
         with open(MODEL_FILE, "rb") as file:
             markov_chain = pickle.load(file)
-        queue = build_queue(QUEUE_FILE, markov_chain, prompt)
+        queue = build_queue(QUEUE_FILE, markov_chain, [prompt])
     click.echo("The new tweet will be:\n  " + queue[-1]["text"])
     with open(QUEUE_FILE, "w") as file:
         json.dump(queue, file, indent=2)
