@@ -6,7 +6,12 @@
 
 A Twitter bot for mimicking writing.
 
-Now sure, you can use this without the twitter functionality, but where's the
+The method for mimicking writing comes from the classic textbook
+[The Practice of Programming](https://www.cs.princeton.edu/~bwk/tpop.webpage/)
+and uses a Markov Chain algorithm that the book implements in several different
+languages.
+
+Now, sure, you can use this without the twitter functionality, but where's the
 fun in that?
 
 ## Using this package
@@ -47,7 +52,7 @@ export VICEROY_LOCATION=".viceroy"
 export BEARER_TOKEN=""
 export BEARER_TOKEN_SECRET=""
 export ACCESS_TOKEN=""
-exportACCESS_TOKEN_SECRET=""
+export ACCESS_TOKEN_SECRET=""
 ```
 
 It's great fun. Tweepy gets into the
