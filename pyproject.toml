@@ -46,7 +46,6 @@ dev = [
 [tool.hatch.build.targets.wheel]
 
 [tool.hatch.version]
-source = "code"
 path = "viceroybot/__about__.py"
 
 [tool.hatch.envs.default]
