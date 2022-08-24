@@ -1,4 +1,4 @@
-# ViceroyBot
+# 🦋 ViceroyBot 🦋
 
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
@@ -72,4 +72,5 @@ send this tweet with
 viceroy tweet
 ```
 
-And that's how it goes!
+And that's how it goes! Happy flying!
+[🦋](https://en.wikipedia.org/wiki/Viceroy_%28butterfly%29)
