@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["maturin>=0.13,<0.14"]
+build-backend = "maturin"
 
 [project]
 name = "viceroybot"
