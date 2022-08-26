@@ -16,24 +16,37 @@ fn markov(_py: Python, m: &PyModule) -> PyResult<()> {
     fn predict(
         markov_chain: HashMap<Vec<String>, Vec<String>>, n_words: i32, prompt: String
     ) -> String {
-        let short_prefixes = short_prefix_chain(&markov_chain);
+        let short_chain = short_prefix_chain(&markov_chain);
+        let words: Vec<String> = short_chain.keys().map(|s| s.to_string()).collect();
         let n_prefix = markov_chain.keys().nth(0).expect("prefixes are not formed").len();
         let mut output: Vec<String> = prompt.split_whitespace().map(|s| s.to_string()).collect();
 
 
-        for word in 0..n_words {
+        for _ in 0..n_words {
             if output.len() >= n_prefix {
-                let prefix = output.iter().rev().take(n_prefix);
-                output.push(markov_chain[prefix].choose(&mut rand::thread_rng()).to_string())
+                let prefix: Vec<String> = output.as_slice()[output.len() - n_prefix..].to_vec();
+                if markov_chain.contains_key(&prefix) {
+                    output.push(markov_chain[&prefix]
+                        .choose(&mut rand::thread_rng())
+                        .unwrap()
+                        .clone());
+                }
+                else {
+                    let prefix = output.iter().last().unwrap().clone();
+                    output.push(match short_chain.get(&prefix) {
+                        Some(pred) => pred.choose(&mut rand::thread_rng()).unwrap().clone(),
+                        None => words.choose(&mut rand::thread_rng()).unwrap().clone()
+                    }
+                )
+                }
             }
             else {
-                let prefix = output.iter().last();
-
+                output.push(words.choose(&mut rand::thread_rng()).unwrap().clone())
             }
 
 
         }
-        "X".to_string()
+        output.join(" ")
     }
 
     fn update_chain(line: String, mut chain: HashMap<Vec<String>, Vec<String>>, n_prefix: usize) -> HashMap<Vec<String>, Vec<String>> {
