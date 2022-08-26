@@ -62,8 +62,13 @@ def write_from_markov_chain(
     Returns:
         generated text
     """
+    last_prefix_lookup = {}
+    for key in markov_chain:
+        prefix = key[-1]
+        if prefix not in last_prefix_lookup:
+            last_prefix_lookup[prefix] = []
+        last_prefix_lookup[prefix].append(markov_chain[key])
     prefix_list = list(markov_chain)
-    last_prefix_lookup = {p[-1]: p for p in markov_chain}
     if prompt is None:
         prefix = choice(prefix_list)
     else:
@@ -71,13 +76,12 @@ def write_from_markov_chain(
     out = " ".join(prefix)
     for _i in range(n_words):
         if prefix not in markov_chain:
-            try:
-                prefix = last_prefix_lookup[prefix[-1]]  # note, this is deterministic
-            except KeyError:  # for the last word in a paragraph
-                prefix = choice(prefix_list)
-            except IndexError:  # when the last word isn't in the prefixes
-                prefix = choice(prefix_list)
-        suffix = choice(list(markov_chain[prefix]))
+            if prefix in last_prefix_lookup:
+                suffix = choice(last_prefix_lookup[prefix[-1]])
+            else:
+                suffix = choice(list(markov_chain[choice(prefix_list)]))
+        else:
+            suffix = choice(list(markov_chain[prefix]))
         out += " " + suffix
         prefix = tuple(list(prefix[1:]) + [suffix])
     return out
