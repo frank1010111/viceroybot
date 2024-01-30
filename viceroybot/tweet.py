@@ -1,4 +1,5 @@
 """Work with twitter to authenticate, get trending tweets, and send random tweets."""
+
 from __future__ import annotations
 
 import json
