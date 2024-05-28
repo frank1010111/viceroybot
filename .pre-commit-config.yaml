@@ -1,11 +1,11 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.4.2
     hooks:
       - id: black-jupyter
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-byte-order-marker
@@ -52,7 +52,7 @@ repos:
         args: ["-a", "from __future__ import annotations"] # Python 3.7+
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
       - id: pyupgrade
         args: ["--py37-plus"]
@@ -95,7 +95,7 @@ repos:
   #         - scipy
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
 
