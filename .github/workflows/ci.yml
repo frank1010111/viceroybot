@@ -13,33 +13,23 @@ on:
       - published
 
 jobs:
-  linting:
-    name: Linting
+  dist:
+    name: Distribution build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-      - uses: actions/setup-python@v4
-      - uses: pre-commit/action@v2.0.3
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Build sdist and wheel
+        run: uv build
+      - uses: actions/upload-artifact@v4
         with:
-          extra_args: --hook-stage manual --all-files
-
-  # dist:
-  #   name: Distribution build
-  #   runs-on: ubuntu-latest
-  #   needs: [pre-commit]
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Build sdist and wheel
-  #       run: pipx run build
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         path: dist
-  #     - name: Check products
-  #       run: pipx run twine check dist/*
+          name: dist
+          path: dist
+      - name: Check products
+        run: uvx twine check dist/*
   #     - uses: pypa/gh-action-pypi-publish@v1.5.0
   #       if: github.event_name == 'release' && github.event.action == 'published'
   #       with:

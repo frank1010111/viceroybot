@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 
 import tweepy
 from dotenv import load_dotenv
@@ -27,7 +28,7 @@ def tweet_from_queue(queue_file):
     """Tweet the first unsent tweet from the queue file and set it to sent."""
     api = authenticate()
 
-    with open(queue_file) as f:
+    with Path(queue_file).open() as f:
         tweet_queue = json.load(f)
     for tweet in tweet_queue:
         if not tweet["sent"]:
@@ -38,8 +39,9 @@ def tweet_from_queue(queue_file):
             except tweepy.TweepError as e:
                 raise e
     else:
-        raise ValueError("No tweets left in queue")
-    with open(queue_file, "w") as f:
+        msg = "No tweets left in queue"
+        raise ValueError(msg)
+    with Path(queue_file).open("w") as f:
         json.dump(tweet_queue, f, indent=2)
     return tweet["text"]
 
@@ -56,10 +58,7 @@ def get_trending(location: str | int = "USA", min_words: int = 3):
     Returns:
         list of trending topics
     """
-    if location == "USA":
-        woeid = 23424977
-    else:
-        woeid = location
+    woeid = 23424977 if location == "USA" else location
     api = authenticate()
     trends = [
         t["name"]
