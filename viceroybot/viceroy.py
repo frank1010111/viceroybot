@@ -26,7 +26,7 @@ from viceroybot.tweet import get_trending, tweet_from_queue
 
 load_dotenv()
 VICEROY_BASE = Path(os.environ.get("VICEROY_BASE", ".viceroy"))
-os.makedirs(VICEROY_BASE, exist_ok=True)
+VICEROY_BASE.makedir(parents=True, exist_ok=True)
 MODEL_FILE = VICEROY_BASE / "trained_model.pkl"
 QUEUE_FILE = VICEROY_BASE / "tweet_queue.json"
 
@@ -34,7 +34,6 @@ QUEUE_FILE = VICEROY_BASE / "tweet_queue.json"
 @click.group()
 def viceroy():
     """Command line tools for working with text generation and twitter."""
-    pass
 
 
 @viceroy.command()
@@ -43,7 +42,7 @@ def viceroy():
 def train(inputs):
     """Train Markov chain on input files."""
     markov_chain = train_markov_chain(inputs)
-    with open(MODEL_FILE, "wb") as file:
+    with Path(MODEL_FILE).open("wb") as file:
         pickle.dump(markov_chain, file)
 
 
@@ -54,7 +53,7 @@ def generate(prompt, n_words):
     """Generate text given a prompt."""
     if not MODEL_FILE.exists():
         click.ClickException("Must train model with `viceroy train` to generate")
-    with open(MODEL_FILE, "rb") as file:
+    with Path(MODEL_FILE).open("rb") as file:
         markov_chain = pickle.load(file)
     output = write_from_markov_chain(markov_chain, n_words, " ".join(prompt))
     click.echo(output)
@@ -80,31 +79,25 @@ def queue(raw: bool, prompt=list[str]):
     If no prompt is given, get Twitter trending topics and use one of them.
     """
     if not QUEUE_FILE.exists():
-        with open(QUEUE_FILE, "w") as file:
+        with Path(QUEUE_FILE).open("w") as file:
             json.dump([], file)
     if prompt:
         prompt = " ".join(prompt)
     else:
         trends = get_trending("USA")
-        if trends:
-            prompt = choice(trends)
-        else:
-            prompt = None
+        prompt = choice(trends) if trends else None
         click.echo("the prompt is: \n  " + prompt)
     if raw:
-        with open(QUEUE_FILE) as file:
+        with Path(QUEUE_FILE).open() as file:
             queue = json.load(file)
-        if queue:
-            id = max(tweet["id"] for tweet in queue) + 1
-        else:
-            id = 1
+        id = max(tweet["id"] for tweet in queue) + 1 if queue else 1
         queue.append({"id": id, "text": prompt, "sent": False})
     else:
-        with open(MODEL_FILE, "rb") as file:
+        with Path(MODEL_FILE).open("rb") as file:
             markov_chain = pickle.load(file)
         queue = build_queue(QUEUE_FILE, markov_chain, [prompt])
     click.echo("The new tweet will be:\n  " + queue[-1]["text"])
-    with open(QUEUE_FILE, "w") as file:
+    with Path(QUEUE_FILE).open("w") as file:
         json.dump(queue, file, indent=2)
 
 
@@ -114,20 +107,14 @@ def queue(raw: bool, prompt=list[str]):
 def tweet(from_queue: bool = True, tweet_text: str = ""):
     """Tweet from either tweet queue or your own text."""
     if tweet_text and from_queue:
-        click.ClickException(
-            "can't use both --from-queue and tweet-text at the same time"
-        )
+        click.ClickException("can't use both --from-queue and tweet-text at the same time")
     elif tweet_text and not from_queue:
-        with open(QUEUE_FILE) as file:
+        with Path(QUEUE_FILE).open() as file:
             queue = json.load(file)
         sent_tweets = [tweet for tweet in queue if tweet["sent"]]
         unsent_tweets = [tweet for tweet in queue if not tweet["sent"]]
         id = max(tweet["id"] for tweet in queue) + 1
-        queue_out = (
-            sent_tweets
-            + [{"id": id, "text": tweet_text, "sent": False}]
-            + unsent_tweets
-        )
-        with open(QUEUE_FILE, "w") as file:
+        queue_out = [*sent_tweets, {"id": id, "text": tweet_text, "sent": False}, *unsent_tweets]
+        with Path(QUEUE_FILE).open("w") as file:
             json.dump(queue_out)
     tweet_from_queue(QUEUE_FILE)

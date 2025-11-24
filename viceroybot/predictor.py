@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from random import choice
 
 
@@ -19,12 +20,9 @@ def build_queue(
     Returns:
         queue (a list)
     """
-    with open(queue_file) as f:
+    with Path(queue_file).open() as f:
         queue = json.load(f)
-    if queue:
-        idx = max(x["id"] for x in queue)
-    else:
-        idx = 0
+    idx = max(x["id"] for x in queue) if queue else 0
     for p in prompts:
         idx += 1
         tries = 0
@@ -63,16 +61,13 @@ def write_from_markov_chain(
         generated text
     """
     last_prefix_lookup = {}
-    for key in markov_chain:
+    for key, val in markov_chain.items():
         prefix = key[-1]
         if prefix not in last_prefix_lookup:
             last_prefix_lookup[prefix] = []
-        last_prefix_lookup[prefix].append(markov_chain[key])
+        last_prefix_lookup[prefix].append(val)
     prefix_list = list(markov_chain)
-    if prompt is None:
-        prefix = choice(prefix_list)
-    else:
-        prefix = tuple(prompt.split())
+    prefix = choice(prefix_list) if prompt is None else tuple(prompt.split())
     out = " ".join(prefix)
     for _i in range(n_words):
         if prefix not in markov_chain:
@@ -83,7 +78,7 @@ def write_from_markov_chain(
         else:
             suffix = choice(list(markov_chain[prefix]))
         out += " " + suffix
-        prefix = tuple(list(prefix[1:]) + [suffix])
+        prefix = (*list(prefix[1:]), suffix)
     return out
 
 
@@ -91,7 +86,7 @@ def train_markov_chain(files: list[str]):
     """Train Markov chain from input files."""
     markov_chain = {}
     for fname in files:
-        with open(fname) as f:
+        with Path(fname).open() as f:
             for line in f.readlines():
                 markov_chain = update_markov_chain(line, markov_chain, n_pref=3)
     return markov_chain
