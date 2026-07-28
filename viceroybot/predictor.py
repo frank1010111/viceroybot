@@ -87,7 +87,7 @@ def train_markov_chain(files: list[str]):
     markov_chain = {}
     for fname in files:
         with Path(fname).open() as f:
-            for line in f.readlines():
+            for line in f:
                 markov_chain = update_markov_chain(line, markov_chain, n_pref=3)
     return markov_chain
 

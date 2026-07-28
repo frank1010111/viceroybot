@@ -9,6 +9,7 @@ from pathlib import Path
 
 import tweepy
 from dotenv import load_dotenv
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 BEARER_TOKEN = os.environ.get("BEARER_TOKEN")
@@ -32,12 +33,9 @@ def tweet_from_queue(queue_file):
         tweet_queue = json.load(f)
     for tweet in tweet_queue:
         if not tweet["sent"]:
-            try:
-                api.update_status(tweet["text"])
-                tweet["sent"] = datetime.now().strftime("%Y-%m-%d %T")
-                break
-            except tweepy.TweepError as e:
-                raise e
+            api.update_status(tweet["text"])
+            tweet["sent"] = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %T")
+            break
     else:
         msg = "No tweets left in queue"
         raise ValueError(msg)
